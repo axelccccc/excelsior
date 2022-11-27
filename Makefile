@@ -1,32 +1,44 @@
+# VARIABLES
+
+## FLAGS
+
 CFLAGS ?= -g -Wall -masm=intel
 
-all: bin/hello bin/disk.img
+## PATHS
+
+BUILD_DIR=build
+SRC_DIR=src
+
+## OBJECTS
+
+BOOTLOADER=$(BUILD_DIR)/bootloader/bootloader.o
+KERNEL=$(BUILD_DIR)/kernel/sample.o
+
+DISK_IMG=disk.img
+DISK_PATH=$(BUILD_DIR)/$(DISK_IMG)
+
+# TARGETS
+
+all: disk
 
 clean:
-	@rm bin/*
+	@rm $(BUILD_DIR)/bootloader/*
+	@rm $(BUILD_DIR)/kernel/*
+	@rm $(DISK_PATH)
 
-.PHONY: all clean
+.PHONY: disk bootloader kernel clean build_dir
 
+bootloader:
+	make -C $(SRC_DIR)/bootloader
 
-bin/hello: hello.c
-	@gcc $(CFLAGS) -o $@ $^
-
-
-# compile bootloader
-
-bin/bootloader: bootloader.asm
-	@nasm -f bin -o $@ $^
-
-# sample program for 2nd sector
-
-bin/sample: sample.asm
-	@nasm -f bin -o $@ $^
+kernel:
+	make -C $(SRC_DIR)/kernel
 
 # Create a 1.4mb floppy disk image
 # of the bootloader
 # conv=notrunc: preserve original size of disk image
 
-bin/disk.img: bin/bootloader bin/sample
-	@dd if=/dev/zero of=$@ bs=512 count=2880
-	@dd if=bin/bootloader of=$@ conv=notrunc bs=512 count=1 seek=0
-	@dd if=bin/sample of=$@ conv=notrunc bs=512 count=1 seek=1
+disk: bootloader kernel
+	@dd if=/dev/zero 	 of=$(DISK_PATH) bs=512 count=2880
+	@dd if=$(BOOTLOADER) of=$(DISK_PATH) bs=512 count=1 seek=0 conv=notrunc
+	@dd if=$(KERNEL) 	 of=$(DISK_PATH) bs=512 count=1 seek=1 conv=notrunc

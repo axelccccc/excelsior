@@ -16,4 +16,10 @@ nasm gcc gdb make qemu-system-i386
  - Launch `launch_os.sh` in a terminal window
  - Launch gdb while in this directory (`.gdbinit`)
 
+Quitting `qemu` (in `-curses` mode)
+In another terminal:
+```
+pkill qemu
+```
+
 ---

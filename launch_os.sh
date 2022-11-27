@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd bin || { echo "/bin not found"; exit 1; }
+cd build || { echo "/bin not found"; exit 1; }
 
 [[ -f "disk.img" ]] || { echo "disk.img not found"; exit 1; }
 
