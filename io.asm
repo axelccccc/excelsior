@@ -111,7 +111,7 @@ print:
     ; epilogue
     pop si                  ; restore si
     pop di                  ; restore di
-    mov sp, bp              ; remove parameters from stack
+    add sp, 4               ; remove parameters from stack
     pop bp                  ; Restore the previous stack frame
     ret
 

@@ -17,7 +17,7 @@ start:
 
 ; message to print on screen
 ; (0ah = newline, 0dh = carriage return, 0 = end of string)
-msg db "Welcome to HaCe OS", 0ah, 0dh, 0h
+msg db "Welcome to my OS", 0ah, 0dh, 0h
 
 
 
@@ -32,15 +32,31 @@ msg db "Welcome to HaCe OS", 0ah, 0dh, 0h
 ;**********
 
 boot:
-    cli             ; disable interrupts
-    cld             ; clear direction flag (string operations)
+    cli                     ; disable interrupts
+    cld                     ; clear direction flag (string operations)
 
-    ; print string "Welcome to HaCe OS"
-    ; push offset address
-    push msg        ; string  (1st parameter) = msg
-    call print      ; print string
+    ; print welcome message
+    push msg                ; string  (1st parameter) = msg
+    call print              ; print welcome message & advance cursor
     
-    hlt             ; halt the CPU
+    ; read 2nd sector of floppy disk into memory
+    ;; prepare buffer
+    mov ax, 0x50            ; buffer segment 0x50
+    mov es, ax              ; set ES to buffer segment
+    xor bx, bx              ; buffer offset 0x00
+                            ; (buffer is now at 0x50:00 = 0x500)
+    ;; prepare registers
+    mov ah, 02h             ; function 2: read sectors
+    mov al, 2               ; read 2 sectors
+    mov ch, 0               ; track 0
+    mov cl, 2               ; read sector 2
+    mov dh, 0               ; head 0
+    mov dl, 0               ; drive 0
+    int 13h                 ; call BIOS — Disk Interrupt
+    ;; execute the sector
+    jmp 0x50:0x0            ; jump to sector 2
+    
+    hlt                     ; halt the CPU
 
 strlen:
     push bp                 ; Store the current stack frame
@@ -76,7 +92,6 @@ print:
     push word [bp+4]        ; push string address onto stack
     call strlen             ; call strlen
     mov cx, ax              ; store length in cx
-    ; inc cx                  ; increment length by 1 (for null terminator)
 
     mov bp, [bp+4]          ; load string address into bp
 
@@ -91,7 +106,7 @@ print:
     ; epilogue
     pop si                  ; restore si
     pop di                  ; restore di
-    mov sp, bp              ; remove parameters from stack
+    add sp, 4               ; remove parameters from stack
     pop bp                  ; Restore the previous stack frame
     ret
 
