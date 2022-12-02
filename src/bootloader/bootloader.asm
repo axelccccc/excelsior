@@ -3,7 +3,11 @@
 ; simple bootloader
 ;**********
 
-org 0x7c00          ; start at 0x7c00
+; org 0x7c00          ; start at 0x7c00
+; /!\ only used for flat binary files (nasm -f bin)
+; /!\ not used for elf files (nasm -f elf)
+;       as the linker script will set the entry point
+
 bits 16             ; 16 bit code
 
 start:
@@ -54,7 +58,7 @@ boot:
     mov dl, 0               ; drive 0
     int 13h                 ; call BIOS — Disk Interrupt
     ;; execute the sector
-    jmp 0x50:0x0            ; jump to sector 2
+    jmp [500h + 18h]        ; jump to dereferenced kernel entry point address
     
     hlt                     ; halt the CPU
 

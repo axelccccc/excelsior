@@ -12,7 +12,7 @@ SRC_DIR=src
 ## OBJECTS
 
 BOOTLOADER=$(BUILD_DIR)/bootloader/bootloader.o
-KERNEL=$(BUILD_DIR)/kernel/sample.o
+KERNEL=$(BUILD_DIR)/kernel/kernel
 
 DISK_IMG=disk.img
 DISK_PATH=$(BUILD_DIR)/$(DISK_IMG)
@@ -22,9 +22,9 @@ DISK_PATH=$(BUILD_DIR)/$(DISK_IMG)
 all: disk
 
 clean:
-	@rm $(BUILD_DIR)/bootloader/*
-	@rm $(BUILD_DIR)/kernel/*
-	@rm $(DISK_PATH)
+	make -C $(SRC_DIR)/bootloader clean
+	make -C $(SRC_DIR)/kernel clean
+	rm $(DISK_PATH)
 
 .PHONY: disk bootloader kernel clean build_dir
 
@@ -41,4 +41,4 @@ kernel:
 disk: bootloader kernel
 	@dd if=/dev/zero 	 of=$(DISK_PATH) bs=512 count=2880
 	@dd if=$(BOOTLOADER) of=$(DISK_PATH) bs=512 count=1 seek=0 conv=notrunc
-	@dd if=$(KERNEL) 	 of=$(DISK_PATH) bs=512 count=1 seek=1 conv=notrunc
+	@dd if=$(KERNEL) 	 of=$(DISK_PATH) bs=512 count=$$(($(shell stat --printf="%s" $(KERNEL))/512)) seek=1 conv=notrunc
