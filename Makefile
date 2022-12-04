@@ -9,6 +9,11 @@ CFLAGS ?= -g -Wall -masm=intel
 BUILD_DIR=build
 SRC_DIR=src
 
+# bear generates a compile_commands.json file
+# for clangd to use
+BEAR=$(shell which bear)
+BEAR_OUTPUT=$(BUILD_DIR)/compile_commands.json
+
 ## OBJECTS
 
 BOOTLOADER=$(BUILD_DIR)/bootloader/bootloader.o
@@ -19,14 +24,25 @@ DISK_PATH=$(BUILD_DIR)/$(DISK_IMG)
 
 # TARGETS
 
-all: disk
+all: make_tracked
 
 clean:
 	make -C $(SRC_DIR)/bootloader clean
 	make -C $(SRC_DIR)/kernel clean
 	rm $(DISK_PATH)
+	rm $(BEAR_OUTPUT)
 
-.PHONY: disk bootloader kernel clean build_dir
+.PHONY: disk bootloader kernel clean build_dir compile_commands
+
+# this target does the whole compilation process
+# tracked by bear, if installed, to generate compile_commands.json
+# for clangd to use
+make_tracked:
+ifeq ($(strip $(BEAR)),)
+	make disk
+else
+	@$(BEAR) --output $(BEAR_OUTPUT) -- make disk
+endif
 
 bootloader:
 	make -C $(SRC_DIR)/bootloader
