@@ -10,11 +10,7 @@ PHDRS
 
 SECTIONS
 {
-    .text 0x600 : ALIGN(0x100)
-    {
-        *(.text.main)
-        *(.text)
-    } :code
+    .text 0x600 : ALIGN(0x100) { *(.text) } :code
     .rodata : { *(.rodata) } :data
     .data : { *(.data) } :data
     .bss : { *(.bss) } :data
