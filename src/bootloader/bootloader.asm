@@ -98,7 +98,8 @@ boot:
                             ; (buffer is now at 0x50:00 = 0x500)
     ;; prepare registers
     mov ah, 0x02            ; function 2: read sectors
-    mov al, 2               ; read 2 sectors
+    ; mov al, 2               ; read 2 sectors
+    mov al, 8               ; read 8 sectors
     mov ch, 0               ; track 0
     mov cl, 2               ; read sector 2
     mov dh, 0               ; head 0
