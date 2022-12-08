@@ -3,16 +3,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static const uint32_t VIDEO_MEMORY = 0xB8000;
-static const uint16_t REG_SCREEN_CTRL = 0x3D4;
-static const uint16_t REG_SCREEN_DATA = 0x3D5;
+#define VIDEO_MEMORY 0xB8000
+#define REG_SCREEN_CTRL 0x3D4
+#define REG_SCREEN_DATA 0x3D5
 
-static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 25;
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
 
-static size_t terminal_row;
-static size_t terminal_column;
-static uint8_t terminal_color;
+#define DEFAULT_TERM_COLOR 0x07 // vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK)
+
 static uint16_t* terminal_buffer;
 
 /* Hardware text mode color constants. */
@@ -33,12 +32,6 @@ enum vga_color {
 	VGA_COLOR_LIGHT_MAGENTA = 13,
 	VGA_COLOR_LIGHT_BROWN = 14,
 	VGA_COLOR_WHITE = 15,
-};
-
-/* Cursor direction */
-enum CUR_DIR {
-    CUR_DIR_BACKWARD,
-    CUR_DIR_FORWARD
 };
 
 /**
@@ -68,6 +61,36 @@ static inline uint16_t vga_entry(
 }
 
 /**
+ * @brief Get current cursor position in video buffer
+ * 
+ * @return uint16_t Cursor position in video buffer
+ */
+uint16_t term_get_cursor_offset();
+
+/**
+ * @brief Set cursor position in video buffer
+ * 
+ * @param offset Cursor position in video buffer
+ */
+void term_set_cursor_offset(uint16_t offset);
+
+/**
+ * @brief Get current cursor position in terminal
+ * 
+ * @param row Row number
+ * @param column Column number
+ */
+void term_get_cursor_pos(size_t* row, size_t* column);
+
+/**
+ * @brief Set cursor position in terminal
+ * 
+ * @param row Row number
+ * @param column Column number
+ */
+void term_set_cursor_pos(size_t row, size_t column);
+
+/**
  * @brief Moves each row of characters up `rows` rows
  * 
  * @param rows Number of rows to scroll up
@@ -84,9 +107,8 @@ void term_scroll(size_t rows);
  * forwards or backwards. It wraps on end of line and scrolls
  * on end of screen
  * @param distance Distance to move in number of characters
- * @param dir Direction in which to move (back/forwards)
  */
-void term_move_cursor(size_t distance, enum CUR_DIR dir);
+void term_move_cursor(size_t distance);
 
 /**
  * @brief Print a character on terminal
@@ -108,4 +130,8 @@ void term_print(const char* str);
  */
 void term_clear(void);
 
+/**
+ * @brief Initialize terminal and video buffer
+ * 
+ */
 void term_init(void);
