@@ -1,5 +1,6 @@
 #include "term.h"
 #include "asm.h"
+#include "mem.h"
 
 void term_get_cursor_pos(size_t* row, size_t* column) {
     // reg 14: high byte of cursor offset
@@ -77,16 +78,26 @@ void term_scroll(size_t rows) {
 
     // move all rows up by `rows`
     for(int i = rows; i < VGA_HEIGHT; i++) {
-        for(int j = 0; j < VGA_WIDTH; j++) {
-            terminal_buffer[(i-rows)*VGA_WIDTH + j] = terminal_buffer[i*VGA_WIDTH + j];
-        }
+        mem_cpy(
+            (char*)terminal_buffer + i*VGA_WIDTH*2,
+            (char*)terminal_buffer + (i-rows)*VGA_WIDTH*2,
+            VGA_WIDTH*2
+        );
+        // for(int j = 0; j < VGA_WIDTH; j++) {
+        //     terminal_buffer[(i-rows)*VGA_WIDTH + j] = terminal_buffer[i*VGA_WIDTH + j];
+        // }
     }
 
     // clear the last `rows` rows
     for(int i = VGA_HEIGHT - rows; i < VGA_HEIGHT; i++) {
-        for(int j = 0; j < VGA_WIDTH; j++) {
-            terminal_buffer[i*VGA_WIDTH + j] = vga_entry(' ', DEFAULT_TERM_COLOR);
-        }
+        mem_set(
+            (char*)terminal_buffer + i*VGA_WIDTH*2,
+            0,
+            VGA_WIDTH*2
+        );
+        // for(int j = 0; j < VGA_WIDTH; j++) {
+        //     terminal_buffer[i*VGA_WIDTH + j] = vga_entry(' ', DEFAULT_TERM_COLOR);
+        // }
     }
 
     // move cursor up by `rows`
