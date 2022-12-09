@@ -78,7 +78,7 @@ void term_scroll(size_t rows) {
 
     // move all rows up by `rows`
     for(int i = rows; i < VGA_HEIGHT; i++) {
-        mem_cpy(
+        memcpy(
             (char*)terminal_buffer + i*VGA_WIDTH*2,
             (char*)terminal_buffer + (i-rows)*VGA_WIDTH*2,
             VGA_WIDTH*2
@@ -90,7 +90,7 @@ void term_scroll(size_t rows) {
 
     // clear the last `rows` rows
     for(int i = VGA_HEIGHT - rows; i < VGA_HEIGHT; i++) {
-        mem_set(
+        memset(
             (char*)terminal_buffer + i*VGA_WIDTH*2,
             0,
             VGA_WIDTH*2
