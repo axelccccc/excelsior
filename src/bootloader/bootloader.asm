@@ -92,14 +92,17 @@ boot:
     
     ; read 2nd sector of floppy disk into memory
     ;; prepare buffer
-    mov ax, 0x50            ; buffer segment 0x50
+    ; mov ax, 0x50            ; buffer segment 0x50
+    mov ax, 0x800            ; buffer segment 0x7e0
     mov es, ax              ; set ES to buffer segment
     xor bx, bx              ; buffer offset 0x00
                             ; (buffer is now at 0x50:00 = 0x500)
+                            ; (buffer is now at 0x7e0:00 = 0x7e00 : end of boot sector)
     ;; prepare registers
     mov ah, 0x02            ; function 2: read sectors
     ; mov al, 2               ; read 2 sectors
-    mov al, 8               ; read 8 sectors
+    ; mov al, 8               ; read 8 sectors
+    mov al, 32               ; read 32 sectors
     mov ch, 0               ; track 0
     mov cl, 2               ; read sector 2
     mov dh, 0               ; head 0
@@ -140,7 +143,7 @@ bits 32         ; 32-bit protected mode
 
 start_kernel:               ; finally jump to kernel entry point
 
-    jmp [500h + 18h]        ; jump to dereferenced kernel entry point address
+    jmp [8000h + 18h]        ; jump to dereferenced kernel entry point address
     
     hlt                     ; halt the CPU
 
