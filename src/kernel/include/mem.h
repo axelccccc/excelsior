@@ -9,7 +9,7 @@
  * @param dest Destination memory location
  * @param count Number of bytes to copy
  */
-void mem_cpy(char* src, char* dest, size_t count);
+void memcpy(char* src, char* dest, size_t count);
 
 /**
  * @brief Set memory to a value
@@ -18,4 +18,4 @@ void mem_cpy(char* src, char* dest, size_t count);
  * @param val Value to set
  * @param count Number of bytes to set
  */
-void mem_set(char* dest, char val, size_t count);
+void memset(char* dest, char val, size_t count);
