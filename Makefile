@@ -2,7 +2,7 @@
 
 ## FLAGS
 
-CFLAGS ?= -g -Wall -masm=intel
+# CFLAGS ?= -g -Wall -masm=intel
 
 ## PATHS
 

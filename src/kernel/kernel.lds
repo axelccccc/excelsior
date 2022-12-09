@@ -1,4 +1,4 @@
-ENTRY(main)
+ENTRY(_start)
 
 PHDRS
 {
@@ -10,9 +10,9 @@ PHDRS
 
 SECTIONS
 {
-    .text 0x600 : ALIGN(0x100) { *(.text) } :code
-    .rodata : { *(.rodata) } :data
-    .data : { *(.data) } :data
-    .bss : { *(.bss) } :data
+    .text 0x9000 :  ALIGN(4K) { *(.text) } :code
+    .rodata :       ALIGN(4K) { *(.rodata) } :data
+    .data :         ALIGN(4K) { *(.data) } :data
+    .bss :          ALIGN(4K) { *(.bss) } :data
     /DISCARD/ : { *(.eh_frame) }
 }
