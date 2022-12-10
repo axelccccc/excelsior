@@ -1,7 +1,5 @@
-# My OS
+# excelsior
 A first self-taught attempt at developing a basic x86 operating system
-
----
 
 ## Dependencies
 Development dependencies include the following
@@ -9,10 +7,8 @@ Development dependencies include the following
 nasm gcc gdb make qemu-system-i386
 ```
 
----
-
 ## Development & Debug
- - Ensure you have `set auto-load safe-path /` in `~/.gdbinit`
+ - Ensure you have `set auto-load safe-path /` in `~/.gdbinit` if you want the local `.gdbinit` file to be invoked on `gdb` launch.
  - Launch `launch_os.sh` in a terminal window
  - Launch gdb while in this directory (`.gdbinit`)
 
@@ -21,5 +17,3 @@ In another terminal:
 ```
 pkill qemu
 ```
-
----
