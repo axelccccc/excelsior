@@ -6,7 +6,6 @@ CC=$(TRIPLE)gcc
 LD=$(TRIPLE)ld
 # -masm=intel ? not compatible with asm.c (GAS syntax)
 CFLAGS+=-g -Wall -ffreestanding -nostdlib -gdwarf-4 -m32 -ggdb3 -std=gnu11 -fno-pic
-CFLAGS_ALT=-g -Wall -ffreestanding -m32
 INCLUDE_DIRS=-Iinclude
 SOURCE_DIRS=src
 
@@ -41,10 +40,10 @@ $(BUILD_DIR)/%.o: $(SOURCE_DIRS)/%.c
 
 
 $(BUILD_DIR)/crti.o: $(SOURCE_DIRS)/crti.S
-	@$(CC) -MD $(CFLAGS_ALT) $(INCLUDE_DIRS) -c $< -o $@
+	@$(CC) -MD $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 $(BUILD_DIR)/crtn.o: $(SOURCE_DIRS)/crtn.S
-	@$(CC) -MD $(CFLAGS_ALT) $(INCLUDE_DIRS) -c $< -o $@
+	@$(CC) -MD $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 
 

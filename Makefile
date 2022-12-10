@@ -29,6 +29,7 @@ all: make_tracked
 clean:
 	make -C $(SRC_DIR)/bootloader clean
 	make -C $(SRC_DIR)/kernel clean
+	make -C $(SRC_DIR)/libc clean
 	rm $(DISK_PATH)
 	rm $(BEAR_OUTPUT)
 
@@ -50,11 +51,14 @@ bootloader:
 kernel:
 	make -C $(SRC_DIR)/kernel
 
+libc:
+	make -C $(SRC_DIR)/libc
+
 # Create a 1.4mb floppy disk image
 # of the bootloader
 # conv=notrunc: preserve original size of disk image
 
-disk: bootloader kernel
+disk: bootloader kernel libc
 	@dd if=/dev/zero 	 of=$(DISK_PATH) bs=512 count=2880
 	@dd if=$(BOOTLOADER) of=$(DISK_PATH) bs=512 count=1 seek=0 conv=notrunc
 	@dd if=$(KERNEL) 	 of=$(DISK_PATH) bs=512 count=$$(($(shell stat --printf="%s" $(KERNEL))/512)) seek=1 conv=notrunc
