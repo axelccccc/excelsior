@@ -1,7 +1,9 @@
 BUILD_DIR=../../build/kernel
 KERNEL=$(BUILD_DIR)/kernel
 
-CC=i686-linux-gnu-gcc
+TRIPLE=i686-linux-gnu-
+CC=$(TRIPLE)gcc
+LD=$(TRIPLE)ld
 # -masm=intel ? not compatible with asm.c (GAS syntax)
 CFLAGS+=-g -Wall -ffreestanding -nostdlib -gdwarf-4 -m32 -ggdb3 -std=gnu11 -fno-pic
 CFLAGS_ALT=-g -Wall -ffreestanding -m32
@@ -55,7 +57,4 @@ $(BUILD_DIR)/crtend.o:
 
 
 $(KERNEL): $(LINK_LIST)
-	@$(CC) -T kernel.lds $(CFLAGS) $(LINK_LIST) -o $@
-
-# @ld -m elf_i386 -T kernel.lds --nmagic $(LINK_LIST) -o $@
-# @ld -m elf_i386 -T kernel.lds --nmagic $(LINK_LIST) -o $@
+	@$(LD) -m elf_i386 -T kernel.lds --nmagic $(LINK_LIST) -o $@
