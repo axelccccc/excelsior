@@ -2,6 +2,8 @@
 #include "asm.h"
 #include "mem.h"
 
+static uint16_t* terminal_buffer;
+
 void term_get_cursor_pos(size_t* row, size_t* column) {
     // reg 14: high byte of cursor offset
     port_byte_out(REG_SCREEN_CTRL, 14);
@@ -83,9 +85,6 @@ void term_scroll(size_t rows) {
             (char*)terminal_buffer + (i-rows)*VGA_WIDTH*2,
             VGA_WIDTH*2
         );
-        // for(int j = 0; j < VGA_WIDTH; j++) {
-        //     terminal_buffer[(i-rows)*VGA_WIDTH + j] = terminal_buffer[i*VGA_WIDTH + j];
-        // }
     }
 
     // clear the last `rows` rows
@@ -95,9 +94,6 @@ void term_scroll(size_t rows) {
             0,
             VGA_WIDTH*2
         );
-        // for(int j = 0; j < VGA_WIDTH; j++) {
-        //     terminal_buffer[i*VGA_WIDTH + j] = vga_entry(' ', DEFAULT_TERM_COLOR);
-        // }
     }
 
     // move cursor up by `rows`

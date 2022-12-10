@@ -12,8 +12,6 @@
 
 #define DEFAULT_TERM_COLOR 0x07 // vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK)
 
-static uint16_t* terminal_buffer;
-
 /* Hardware text mode color constants. */
 enum vga_color {
     VGA_COLOR_BLACK = 0,
