@@ -13,11 +13,16 @@
 #endif
 
 extern int _init(void);
+extern int _fini(void);
 void main(void);
 
 void _start(void) {
     _init();
     main();
+}
+
+void _end(void) {
+    _fini();
 }
 
 __attribute__((constructor)) void test(void) {
@@ -26,11 +31,17 @@ __attribute__((constructor)) void test(void) {
     term_print("This prints before main()\n");
 }
 
+__attribute__((destructor)) void test2(void) {
+    term_print("This prints after main()\n");
+    while(true) {}
+}
+
 void main(void) {
 
     term_print("Welcome to my OS!\n");
     term_print("Test another line\n");
-    term_print("And another");
-    while(true) {}
+    term_print("And another\n");
+
+    _end();
     
 }
