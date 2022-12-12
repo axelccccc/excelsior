@@ -1,5 +1,9 @@
 # VARIABLES
 
+## INCLUDE make.config (arch, etc.)
+
+include make.config
+
 ## FLAGS
 
 # CFLAGS ?= -g -Wall -masm=intel

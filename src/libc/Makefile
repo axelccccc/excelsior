@@ -1,15 +1,20 @@
+include ../../make.config
+
+ARCHDIR=arch/$(TARGET_ARCH)
+
 BUILD_DIR=../../build/libc
 SYSROOT=../../build/sysroot
 
-TRIPLE=i686-elf-
 CC=$(TRIPLE)gcc
 LD=$(TRIPLE)ld
 AR=$(TRIPLE)ar
 
-CFLAGS+=-g -Wall -ffreestanding -nostdlib -gdwarf-4 -m32 -ggdb3 -std=gnu11
+include $(ARCHDIR)/make.config
+
+CFLAGS+=$(ARCH_CFLAGS) -g -Wall -ffreestanding -nostdlib -gdwarf-4 -ggdb3 -std=gnu11
 LIBC_CFLAGS=$(CFLAGS) -D__is_libc
 LIBK_CFLAGS=$(CFLAGS) -D__is_libk
-INCLUDE_DIRS=-Iinclude
+INCLUDE_DIRS=-Iinclude -I$(ARCHDIR)
 
 LIBC_SRCS := $(shell find . -iname '*.c' | sed 's/^\.\///')
 LIBC_ASM_SRCS := $(shell find . -iname '*.S' | sed 's/^\.\///')
@@ -63,18 +68,6 @@ $(BUILD_DIR)/%.libk.o: %.c
 
 $(BUILD_DIR)/%.libk.o: %.S
 	@$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(INCLUDE_DIRS)
-
-# $(LIBC_OBJS): $(LIBC_SRCS)
-# 	@$(CC) -MD -c $< -o $@ $(LIBC_CFLAGS) $(INCLUDE_DIRS)
-
-# $(LIBC_ASM_OBJS): $(LIBC_ASM_SRCS)
-# 	@$(CC) -MD -c $< -o $@ $(LIBC_CFLAGS) $(INCLUDE_DIRS)
-
-# $(LIBK_OBJS): $(LIBC_SRCS)
-# 	$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(INCLUDE_DIRS)
-
-# $(LIBK_ASM_OBJS): $(LIBC_ASM_SRCS)
-# 	@$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(INCLUDE_DIRS)
 
 -include $(LIBC_OBJS:.o=.d)
 -include $(LIBC_ASM_OBJS:.o=.d)

@@ -1,19 +1,25 @@
+include ../../make.config
+
+ARCHDIR=arch/$(TARGET_ARCH)
+
 BUILD_DIR=../../build/bootloader
 
-BOOTLOADER_SRCS := $(wildcard *.asm)
-BOOTLOADER_OBJS := $(patsubst %.asm, $(BUILD_DIR)/%.o, $(BOOTLOADER_SRCS))
+BOOTLOADER_SRCS := $(wildcard $(ARCHDIR)/*.asm)
+BOOTLOADER_OBJS := $(patsubst $(ARCHDIR)/%.asm, $(BUILD_DIR)/%.o, $(BOOTLOADER_SRCS))
 
 all: $(BOOTLOADER_OBJS)
 
 clean:
-	@rm $(BUILD_DIR)/*
+	@find $(BUILD_DIR) -type f -name '*.o' -delete
 
 .PHONY: build_dir clean
 
 build_dir:
 	@mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/%.o: %.asm build_dir
-	@nasm -f elf $< -F dwarf -g -o $@
-	@ld -m elf_i386 -T bootloader.lds $@ -o $@.elf
+include $(ARCHDIR)/make.config
+
+$(BUILD_DIR)/%.o: $(ARCHDIR)/%.asm build_dir
+	@nasm -I $(ARCHDIR) -f elf $< -F dwarf -g -o $@
+	@ld $(LD_ARCH_FLAGS) -T $(ARCHDIR)/$(BOOTLOADER_LDS) $@ -o $@.elf
 	@objcopy -O binary $(BUILD_DIR)/bootloader.o.elf $@
