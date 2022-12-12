@@ -4,6 +4,7 @@ ARCHDIR=arch/$(TARGET_ARCH)
 
 BUILD_DIR=../../build/libc
 SYSROOT=../../build/sysroot
+KERNEL_SRC_DIR=../kernel
 
 CC=$(TRIPLE)gcc
 LD=$(TRIPLE)ld
@@ -14,7 +15,7 @@ include $(ARCHDIR)/make.config
 CFLAGS+=$(ARCH_CFLAGS) -g -Wall -ffreestanding -nostdlib -gdwarf-4 -ggdb3 -std=gnu11
 LIBC_CFLAGS=$(CFLAGS) -D__is_libc
 LIBK_CFLAGS=$(CFLAGS) -D__is_libk
-INCLUDE_DIRS=-Iinclude -I$(ARCHDIR)
+INCLUDE_DIRS=-Iinclude -I$(ARCHDIR) -I$(KERNEL_SRC_DIR)/include -I$(KERNEL_SRC_DIR)/$(ARCHDIR)
 
 LIBC_SRCS := $(shell find . -iname '*.c' | sed 's/^\.\///')
 LIBC_ASM_SRCS := $(shell find . -iname '*.S' | sed 's/^\.\///')

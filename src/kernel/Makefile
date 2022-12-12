@@ -5,6 +5,7 @@ ARCHDIR=arch/$(TARGET_ARCH)
 BUILD_DIR=../../build/kernel
 KERNEL=$(BUILD_DIR)/kernel
 SYSROOT=../../build/sysroot
+LIBK_SRC_DIR=../libc
 
 CC=$(TRIPLE)gcc
 LD=$(TRIPLE)ld
@@ -13,7 +14,7 @@ include $(ARCHDIR)/make.config
 
 # -masm=intel ? not compatible with asm.c (GAS syntax)
 CFLAGS+=$(ARCH_CFLAGS) -g -Wall -ffreestanding -gdwarf-4 -ggdb3 -std=gnu11 -fno-pic -D__is_kernel --sysroot=$(SYSROOT)
-INCLUDE_DIRS=-isystem=/usr/include -Iinclude -I$(ARCHDIR)
+INCLUDE_DIRS=-isystem=/usr/include -Iinclude -I$(ARCHDIR) -I$(LIBC_SRC_DIR)/include -I$(LIBC_SRC_DIR)/$(ARCHDIR)
 LIBS=-nostdlib -lk -lgcc
 SOURCE_DIRS=src
 
