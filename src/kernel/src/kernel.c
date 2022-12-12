@@ -2,11 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "term.h"
+# include <kernel/term.h>
 
-// #if defined(__linux__)
-// #error "Wrong OS target"
-// #endif
+#if defined(__linux__)
+#error "Wrong OS target"
+#endif
 
 #if !defined(__i386__)
 #error "This kernel must be compiled for an ix86 target (-m elf_i386)"

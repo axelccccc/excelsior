@@ -1,6 +1,8 @@
 #include <string.h>
 
-#include "term.h"
+#include <kernel/term.h>
+
+#include "vga.h"
 #include "asm.h"
 
 static uint16_t* terminal_buffer;
