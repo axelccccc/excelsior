@@ -1,6 +1,7 @@
 BUILD_DIR=../../build/libc
+SYSROOT=../../build/sysroot
 
-TRIPLE=i686-linux-gnu-
+TRIPLE=i686-elf-
 CC=$(TRIPLE)gcc
 LD=$(TRIPLE)ld
 AR=$(TRIPLE)ar
@@ -21,7 +22,7 @@ OBJ_DIRS := $(sort $(dir $(LIBC_OBJS) $(LIBC_ASM_OBJS)))
 LIBK_OBJS := $(LIBC_OBJS:.o=.libk.o)
 LIBK_ASM_OBJS := $(LIBC_ASM_OBJS:.o=.libk.o)
 
-all: build_dir $(BUILD_DIR)/libk.a # $(BUILD_DIR)/libc.a 
+all: build_dir $(BUILD_DIR)/libk.a install # $(BUILD_DIR)/libc.a 
 
 clean:
 # remove libk object files if link has been built
@@ -37,7 +38,7 @@ endif
 # remove all .d files in all subdirectories of build
 	@find $(BUILD_DIR) -name '*.d' -type f -delete
 
-.PHONY: all clean build_dir
+.PHONY: all clean build_dir install-headers install-libs install
 
 build_dir:
 	@mkdir -p $(BUILD_DIR)
@@ -51,19 +52,41 @@ $(BUILD_DIR)/libc.a: $(LIBC_OBJS) $(LIBC_ASM_OBJS)
 $(BUILD_DIR)/libk.a: $(LIBK_OBJS) $(LIBK_ASM_OBJS)
 	@$(AR) rcs $@ $^
 
-$(LIBC_OBJS): $(LIBC_SRCS)
-	@$(CC) -MD $(LIBC_CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+$(BUILD_DIR)/%.o: %.c
+	@$(CC) -MD -c $< -o $@ $(LIBC_CFLAGS) $(INCLUDE_DIRS)
 
-$(LIBC_ASM_OBJS): $(LIBC_ASM_SRCS)
-	@$(CC) -MD $(LIBC_CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+$(BUILD_DIR)/%.o: %.S
+	@$(CC) -MD -c $< -o $@ $(LIBC_CFLAGS) $(INCLUDE_DIRS)
 
-$(LIBK_OBJS): $(LIBC_SRCS)
-	@$(CC) -MD $(LIBK_CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+$(BUILD_DIR)/%.libk.o: %.c
+	@$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(INCLUDE_DIRS)
 
-$(LIBK_ASM_OBJS): $(LIBC_ASM_SRCS)
-	@$(CC) -MD $(LIBK_CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+$(BUILD_DIR)/%.libk.o: %.S
+	@$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(INCLUDE_DIRS)
+
+# $(LIBC_OBJS): $(LIBC_SRCS)
+# 	@$(CC) -MD -c $< -o $@ $(LIBC_CFLAGS) $(INCLUDE_DIRS)
+
+# $(LIBC_ASM_OBJS): $(LIBC_ASM_SRCS)
+# 	@$(CC) -MD -c $< -o $@ $(LIBC_CFLAGS) $(INCLUDE_DIRS)
+
+# $(LIBK_OBJS): $(LIBC_SRCS)
+# 	$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(INCLUDE_DIRS)
+
+# $(LIBK_ASM_OBJS): $(LIBC_ASM_SRCS)
+# 	@$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(INCLUDE_DIRS)
 
 -include $(LIBC_OBJS:.o=.d)
 -include $(LIBC_ASM_OBJS:.o=.d)
 -include $(LIBK_OBJS:.libk.o=.libk.d)
 -include $(LIBK_ASM_OBJS:.libk.o=.libk.d)
+
+install-headers:
+	@mkdir -p $(SYSROOT)/usr/include
+	@cp -r include/* $(SYSROOT)/usr/include
+
+install-libs: $(BUILD_DIR)/libk.a
+	@mkdir -p $(SYSROOT)/usr/lib
+	@cp $(BUILD_DIR)/libk.a $(SYSROOT)/usr/lib
+
+install: install-headers install-libs

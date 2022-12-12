@@ -1,4 +1,5 @@
 build
 test
+tmp*
 .vscode
 READMEdraft.md

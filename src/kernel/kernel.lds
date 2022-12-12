@@ -14,5 +14,5 @@ SECTIONS
     .rodata :       ALIGN(4K) { *(.rodata) } :data
     .data :         ALIGN(4K) { *(.data) } :data
     .bss :          ALIGN(4K) { *(.bss) } :data
-    /DISCARD/ : { *(.eh_frame) }
+    /* /DISCARD/ : { *(.eh_frame) } */
 }

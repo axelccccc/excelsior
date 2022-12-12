@@ -48,7 +48,7 @@ endif
 bootloader:
 	make -C $(SRC_DIR)/bootloader
 
-kernel:
+kernel: libc
 	make -C $(SRC_DIR)/kernel
 
 libc:

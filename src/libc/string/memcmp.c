@@ -11,7 +11,7 @@
 
 #include <string.h>
 
-int memcmp(void* src, void* dest, size_t count) {
+int memcmp(const void* src, const void* dest, size_t count) {
 
     unsigned char* src8 = (unsigned char*)src;
     unsigned char* dest8 = (unsigned char*)dest;
