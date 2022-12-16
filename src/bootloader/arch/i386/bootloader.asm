@@ -33,7 +33,7 @@ gdt_null:           ; the null descriptor (always first)
     dd 0x0          ; dd -> define double word (32bits)
     dd 0x0
 
-gdt_code:           ; code segment descriptor
+gdt_code:           ; kernel code segment descriptor
     ; 1st flags  : (present)1 (privilege)00 (descriptor type)1           -> 1001 b
     ; type flags : (code)1 (conforming)0 (readable)1 (accessed)0         -> 1010 b
     ; 2nd flags  : (granularity)1 (32-bit default)1 (64-bit seg)0 (AVL)0 -> 1100 b
@@ -44,15 +44,49 @@ gdt_code:           ; code segment descriptor
     db 0b11001111   ; 2nd flags, Limit (bits 16-19)
     db 0x0          ; Base (bits 24-31)
 
-gdt_data:           ; data segment descriptor
+gdt_data:           ; kernel data segment descriptor
     ; the data segment overlaps the code segment for the *basic flat model*
     ; only type flags differ from code segment
-    ; type flags : (code)0 ( expanddown)0 (writable)1 (accessed)0        -> 0010 b
+    ; type flags : (code)0 (expanddown)0 (writable)1 (accessed)0        -> 0010 b
     dw 0xffff       ; Limit (bits 0-15)
     dw 0x0          ; Base (bits 0-15)
     db 0x0          ; Base (bits 16-23)
     db 0b10010010   ; 1st flags, type flags
     db 0b11001111   ; 2nd flags, Limit (bits 16-19)
+    db 0x0          ; Base (bits 24-31)
+
+gdt_user_code:      ; user mode code segment descriptor
+    ; 1st flags  : (present)1 (privilege)11 (descriptor type)1           -> 1111 b
+    ; type flags : (code)1 (conforming)0 (readable)1 (accessed)0         -> 1010 b
+    ; 2nd flags  : (granularity)1 (32-bit default)1 (64-bit seg)0 (AVL)0 -> 1100 b
+    dw 0xffff       ; Limit (bits 0-15)
+    dw 0x0          ; Base (bits 0-15)
+    db 0x0          ; Base (bits 16-23)
+    db 0b11111010   ; 1st flags, type flags
+    db 0b11001111   ; 2nd flags, Limit (bits 16-19)
+    db 0x0          ; Base (bits 24-31)
+
+gdt_user_data:      ; user mode data segment descriptor
+    ; the data segment overlaps the code segment for the *basic flat model*
+    ; only type flags differ from code segment
+    ; type flags : (code)0 (expanddown)0 (writable)1 (accessed)0        -> 0010 b
+    dw 0xffff       ; Limit (bits 0-15)
+    dw 0x0          ; Base (bits 0-15)
+    db 0x0          ; Base (bits 16-23)
+    db 0b11110010   ; 1st flags, type flags
+    db 0b11001111   ; 2nd flags, Limit (bits 16-19)
+    db 0x0          ; Base (bits 24-31)
+
+task_state_seg:     ; task state segment descriptor
+    ; More info: https://wiki.osdev.org/Task_State_Segment
+    ; 1st flags  : (present)1 (privilege)00 (descriptor type)0           -> 1000 b
+    ; type flags : (code)1 (conforming)0 (readable)0 (accessed)1         -> 1001 b
+    ; 2nd flags  : (granularity)0 (32-bit default)1 (64-bit seg)0 (AVL)0 -> 0100 b
+    dw 0x6b         ; Limit (bits 0-15) Protected mode: 0x67 + 4
+    dw 0x0          ; Base (bits 0-15) Which addres for TSS ??
+    db 0x0          ; Base (bits 16-23)
+    db 0b10001001   ; 1st flags, type flags
+    db 0b00000000   ; 2nd flags, Limit (bits 16-19)
     db 0x0          ; Base (bits 24-31)
 
 gdt_end:            ; label for calculating GDT size
@@ -92,17 +126,16 @@ boot:
     
     ; read 2nd sector of floppy disk into memory
     ;; prepare buffer
-    ; mov ax, 0x50            ; buffer segment 0x50
-    mov ax, 0x800            ; buffer segment 0x7e0
+    mov ax, 0x1000          ; buffer segment 0x1000
     mov es, ax              ; set ES to buffer segment
     xor bx, bx              ; buffer offset 0x00
-                            ; (buffer is now at 0x50:00 = 0x500)
-                            ; (buffer is now at 0x7e0:00 = 0x7e00 : end of boot sector)
+                            ; (buffer is now at 0x1000:00 = 0x10000)
+                            ; the kernel is loaded at a 64k boundary, (0x10000)
+                            ; the floppy disk driver otherwise raises
+                            ; a boundary cross error when it is traversed
     ;; prepare registers
     mov ah, 0x02            ; function 2: read sectors
-    ; mov al, 2               ; read 2 sectors
-    ; mov al, 8               ; read 8 sectors
-    mov al, 32               ; read 32 sectors
+    mov al, 128             ; read 128 sectors (64kb)
     mov ch, 0               ; track 0
     mov cl, 2               ; read sector 2
     mov dh, 0               ; head 0
@@ -143,7 +176,7 @@ bits 32         ; 32-bit protected mode
 
 start_kernel:               ; finally jump to kernel entry point
 
-    jmp [8000h + 18h]        ; jump to dereferenced kernel entry point address
+    jmp [10000h + 18h]        ; jump to dereferenced kernel entry point address
     
     hlt                     ; halt the CPU
 
