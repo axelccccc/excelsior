@@ -1,14 +1,6 @@
-# VARIABLES
+##### VARIABLES #####
 
-## INCLUDE make.config (arch, etc.)
-
-include make.config
-
-## FLAGS
-
-# CFLAGS ?= -g -Wall -masm=intel
-
-## PATHS
+include make.config # General build info (arch, triple, etc.)
 
 BUILD_DIR=build
 SRC_DIR=src
@@ -26,7 +18,9 @@ KERNEL=$(BUILD_DIR)/kernel/kernel
 DISK_IMG=disk.img
 DISK_PATH=$(BUILD_DIR)/$(DISK_IMG)
 
-# TARGETS
+#####################
+
+###### TARGETS ######
 
 all: make_tracked
 
@@ -36,6 +30,10 @@ clean:
 	make -C $(SRC_DIR)/libc clean
 	rm $(DISK_PATH)
 	rm $(BEAR_OUTPUT)
+
+install:
+	make -C $(SRC_DIR)/kernel install
+	make -C $(SRC_DIR)/libc install
 
 .PHONY: disk bootloader kernel clean build_dir compile_commands
 
@@ -66,3 +64,5 @@ disk: bootloader kernel libc
 	@dd if=/dev/zero 	 of=$(DISK_PATH) bs=512 count=2880
 	@dd if=$(BOOTLOADER) of=$(DISK_PATH) bs=512 count=1 seek=0 conv=notrunc
 	@dd if=$(KERNEL) 	 of=$(DISK_PATH) bs=512 count=$$(($(shell stat --printf="%s" $(KERNEL))/512)) seek=1 conv=notrunc
+
+#####################
