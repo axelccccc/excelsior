@@ -44,7 +44,7 @@ void _end(void) {
 
 void main(void) {
 
-    uint64_t* gdt_start = (uint64_t*)0x7c15;
+    uint64_t* gdt_start = (uint64_t*)GDT_START;
 
     struct gdt_entry k_code;
     struct gdt_entry k_data;
@@ -75,6 +75,12 @@ void main(void) {
     print_gdt_entry_info(&u_data);
     puts("TSS");
     print_gdt_entry_info(&tss);
+
+    puts("Reloading GDT Table...");
+
+    load_gdt();
+
+    puts("Done.");
 
     while(true) {}
 

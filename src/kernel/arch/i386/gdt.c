@@ -35,6 +35,21 @@ void set_gdt_entry(struct gdt_entry src, uint8_t* dst) {
     
 }
 
+void load_gdt() {
+
+    __asm__ volatile( // volatile because has no output, not to be optimized away
+        "jmp $0x08,$gdt_did_reset\n\t" // 0x08: kernel code segment
+        "gdt_did_reset:\n\t"
+        "mov $0x10, %ax\n\t"         // 0x10: kernel data segment
+        "mov %ax, %ds\n\t"
+        "mov %ax, %ss\n\t"
+        "mov %ax, %es\n\t"
+        "mov %ax, %fs\n\t"
+        "mov %ax, %gs\n\t"
+    );
+    
+}
+
 void print_gdt_entry_info(struct gdt_entry* entry) {
 
     printf("Limit      : %08x\n", entry->limit);

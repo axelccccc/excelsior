@@ -1,6 +1,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+// Start of the Global Descriptor Table
+// (temporary)
+
+#define GDT_START               0x7c15
+
 // The flags are defined in accordance to
 // the way they are stored in gdt_entry.flags
 //      NONE TYPE FLAGS B FLAGS A
@@ -42,6 +47,11 @@ struct gdt_entry* get_gdt_entry(uint8_t* src, struct gdt_entry* dst);
  * @param dst 
  */
 void set_gdt_entry(struct gdt_entry src, uint8_t* dst);
+
+/**
+ * @brief Load Global Descriptor Table
+ */
+void load_gdt();
 
 /**
  * @brief Print detailed information on a GDT entry
