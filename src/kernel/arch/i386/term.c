@@ -9,11 +9,11 @@ static uint16_t* terminal_buffer;
 
 void term_get_cursor_pos(size_t* row, size_t* column) {
     // reg 14: high byte of cursor offset
-    port_byte_out(REG_SCREEN_CTRL, 14);
-    uint32_t offset = port_byte_in(REG_SCREEN_DATA) << 8;
+    outb(REG_SCREEN_CTRL, 14);
+    uint32_t offset = inb(REG_SCREEN_DATA) << 8;
     // reg 15: low byte of cursor offset
-    port_byte_out(REG_SCREEN_CTRL, 15);
-    offset += port_byte_in(REG_SCREEN_DATA);
+    outb(REG_SCREEN_CTRL, 15);
+    offset += inb(REG_SCREEN_DATA);
     *row = offset / VGA_WIDTH;
     *column = offset % VGA_WIDTH;
 }
@@ -21,30 +21,30 @@ void term_get_cursor_pos(size_t* row, size_t* column) {
 void term_set_cursor_pos(size_t row, size_t column) {
     uint32_t offset = row * VGA_WIDTH + column;
     // reg 14: high byte of cursor offset
-    port_byte_out(REG_SCREEN_CTRL, 14);
-    port_byte_out(REG_SCREEN_DATA, offset >> 8);
+    outb(REG_SCREEN_CTRL, 14);
+    outb(REG_SCREEN_DATA, offset >> 8);
     // reg 15: low byte of cursor offset
-    port_byte_out(REG_SCREEN_CTRL, 15);
-    port_byte_out(REG_SCREEN_DATA, offset);
+    outb(REG_SCREEN_CTRL, 15);
+    outb(REG_SCREEN_DATA, offset);
 }
 
 uint16_t term_get_cursor_offset() {
     // reg 14: high byte of cursor offset
-    port_byte_out(REG_SCREEN_CTRL, 14);
-    uint32_t offset = port_byte_in(REG_SCREEN_DATA) << 8;
+    outb(REG_SCREEN_CTRL, 14);
+    uint32_t offset = inb(REG_SCREEN_DATA) << 8;
     // reg 15: low byte of cursor offset
-    port_byte_out(REG_SCREEN_CTRL, 15);
-    offset += port_byte_in(REG_SCREEN_DATA);
+    outb(REG_SCREEN_CTRL, 15);
+    offset += inb(REG_SCREEN_DATA);
     return offset;
 }
 
 void term_set_cursor_offset(uint16_t offset) {
     // reg 14: high byte of cursor offset
-    port_byte_out(REG_SCREEN_CTRL, 14);
-    port_byte_out(REG_SCREEN_DATA, offset >> 8);
+    outb(REG_SCREEN_CTRL, 14);
+    outb(REG_SCREEN_DATA, offset >> 8);
     // reg 15: low byte of cursor offset
-    port_byte_out(REG_SCREEN_CTRL, 15);
-    port_byte_out(REG_SCREEN_DATA, offset);
+    outb(REG_SCREEN_CTRL, 15);
+    outb(REG_SCREEN_DATA, offset);
 }
 
 void term_move_cursor(size_t distance) {

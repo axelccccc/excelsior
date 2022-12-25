@@ -1,3 +1,4 @@
+#include "asm.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -6,6 +7,8 @@
 #include <kernel/term.h>
 
 #include <gdt.h>
+#include <idt.h>
+#include <pic.h>
 
 #if defined(__linux__)
 #error "Wrong OS target"
@@ -19,71 +22,114 @@ extern int _init(void);
 extern int _fini(void);
 void main(void);
 
+__attribute__((noreturn))
 void _start(void) {
     _init();
     main();
+    __asm__ volatile("hlt");
+    __builtin_unreachable();
 }
 
 void _end(void) {
     _fini();
 }
 
-/* __attribute__((constructor)) void test(void) {
+__attribute__((constructor)) void test(void) {
     term_init();
     term_clear();
     puts("This prints before main()");
-} */
+}
 
 /**
  * @BUG: When compiled with `-g`, this function is never called ?
+ * @FIX: Stripping debug symbols from binary and debugging with
+ *       separate symbol file fixes the problem ? weird.
  */
-/* __attribute__((destructor)) void test2(void) {
+__attribute__((destructor)) void test2(void) {
     puts("This prints after main()");
     while(true) {}
-} */
+}
+
+// Global Descriptor Table
+static uint64_t gdt[6];
+
+// Interrupt Descriptor Table
+// (256 * 8-byte structures)
+
+static uint64_t idt[256];
+extern void* isr_stub_table[];
 
 void main(void) {
 
-    uint64_t* gdt_start = (uint64_t*)GDT_START;
-
-    struct gdt_entry k_code;
-    struct gdt_entry k_data;
-    struct gdt_entry u_code;
-    struct gdt_entry u_data;
-    struct gdt_entry tss;
-
-    term_init();
-    term_clear();
-
+    uint8_t* gdt_bootloader = (uint8_t*)GDT_START;
+    gdt_entry gdt_tmp;
+    
     puts("Welcome to my OS!");
 
-    puts("Retrieving GDT entries...");
+    // Disabling interrupts, just in case
+    printf("Disabling Interrupts...");
+    disable_interrupts();
+    printf(" Done\n");
 
-    get_gdt_entry((uint8_t*)(gdt_start+1), &k_code);
-    get_gdt_entry((uint8_t*)(gdt_start+2), &k_data);
-    get_gdt_entry((uint8_t*)(gdt_start+3), &u_code);
-    get_gdt_entry((uint8_t*)(gdt_start+4), &u_data);
-    get_gdt_entry((uint8_t*)(gdt_start+5), &tss);
+    printf("Relocating GDT...");
+    set_gdt_entry(*get_gdt_entry(&gdt_bootloader[0], &gdt_tmp), (uint8_t*)&gdt[0]);
+    set_gdt_entry(*get_gdt_entry(&gdt_bootloader[1*8], &gdt_tmp), (uint8_t*)&gdt[1]);
+    set_gdt_entry(*get_gdt_entry(&gdt_bootloader[2*8], &gdt_tmp), (uint8_t*)&gdt[2]);
+    set_gdt_entry(*get_gdt_entry(&gdt_bootloader[3*8], &gdt_tmp), (uint8_t*)&gdt[3]);
+    set_gdt_entry(*get_gdt_entry(&gdt_bootloader[4*8], &gdt_tmp), (uint8_t*)&gdt[4]);
+    set_gdt_entry(*get_gdt_entry(&gdt_bootloader[5*8], &gdt_tmp), (uint8_t*)&gdt[5]);
+    printf(" Done\n");
 
-    puts("Kernel Code");
-    print_gdt_entry_info(&k_code);
-    puts("Kernel Data");
-    print_gdt_entry_info(&k_data);
-    puts("User Code");
-    print_gdt_entry_info(&u_code);
-    puts("User Data");
-    print_gdt_entry_info(&u_data);
-    puts("TSS");
-    print_gdt_entry_info(&tss);
+    printf("Loading GDT...");
+    load_gdt((uint32_t)&gdt, sizeof(gdt) - 1);
+    printf(" Done\n");
 
-    puts("Reloading GDT Table...");
+    // Relocate PIC interrupts from 0x0 to 0x20
+    // (0x0 -> 0x1F (the 32 first) are reserved for CPU exceptions)
+    printf("Relocating PIC interrupts (0x00 -> 0x20)...");
+    pic_remap(0x20, 0x28);
+    printf(" Done\n");
 
-    load_gdt();
+    // Populate & load IDT
+    printf("Loading IDT...");
 
-    puts("Done.");
+    // 32 CPU Exceptions + 16(-1) PIC IRQs (-IRQ2: slave)
+    for(int i = 0; i < 48; i++) {
+        idt_entry entry = {
+            .selector = 0x08,
+            .offset = (uint32_t)isr_stub_table[i],
+            .gate_type = G_TYPE_INT_32,
+            .flags = G_PRESENT | G_PRIV_KERNEL
+        };
+        set_idt_entry(entry, (uint8_t*)&idt[i]);
+    }
+
+    load_idt((uint32_t)idt, sizeof(idt) - 1);
+
+    printf(" Done\n");
+
+    printf("Masking PIC IRQs...");
+    for(int i = 0; i < 16; i++) {
+        irq_set_mask(i);
+    }
+    printf(" Done\n");
+
+    printf("Enabling supported PIC IRQs...");
+    irq_clear_mask(1);
+    printf(" Done\n");
+
+    // Enable interrupts
+    printf("Enabling Interrupts...");
+    enable_interrupts();
+    printf(" Done\n");
+
+    // printf("PIC IRR: ");
+    // printf("%04x\n", pic_get_irr());
+    // printf("PIC ISR: ");
+    // printf("%04x\n", pic_get_isr());
 
     while(true) {}
 
-    // _end();
+    _end();
     
 }
