@@ -9,4 +9,5 @@ qemu-system-i386 \
 	-drive format=raw,file=disk.img,index=0,if=floppy \
 	-gdb tcp::26000 \
 	-S \
-	-curses
+	-curses \
+	-monitor telnet:127.0.0.1:1234,server,nowait
