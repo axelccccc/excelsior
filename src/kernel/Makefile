@@ -26,10 +26,10 @@ include $(ARCHDIR)/make.config # Architecture-specific build info (CFLAGS, etc.)
 # LIBS=-nostdlib -lk -lgcc
 
 # w/o sysroot
-CFLAGS+=$(ARCH_CFLAGS) -g -Wall -Wextra -Werror -ffreestanding -gdwarf-4 -ggdb3 -std=gnu99 -fno-pic -fstack-protector -D__is_kernel --sysroot=$(SYSROOT)
+CFLAGS+=$(ARCH_CFLAGS) -g -Wall -Wextra -ffreestanding -gdwarf-4 -ggdb3 -std=gnu99 -fno-pic -fstack-protector -D__is_kernel --sysroot=$(SYSROOT)
 
 # production flags (ignore for now)
-# CFLAGS+=$(ARCH_CFLAGS) -O3 -Wall -ffreestanding -std=gnu99 -fno-pic -D__is_kernel --sysroot=$(SYSROOT)
+# CFLAGS+=$(ARCH_CFLAGS) -O3 -Wall -ffreestanding -std=gnu99 -fno-pic -fstack-protector -D__is_kernel --sysroot=$(SYSROOT)
 
 # INCLUDE_DIRS=-Iinclude -I$(ARCHDIR) -I$(LIBC_SRC_DIR)/include -I$(LIBC_SRC_DIR)/$(ARCHDIR)
 # temporary include of the gcc library headers path (for clangd)
@@ -45,12 +45,15 @@ KERNEL_SRCS := $(wildcard $(SOURCE_DIRS)/*.c)
 KERNEL_OBJS := $(patsubst $(SOURCE_DIRS)/%.c, $(BUILD_DIR)/%.o, $(KERNEL_SRCS))
 
 ARCH_ASM_SRCS := $(wildcard $(ARCHDIR)/*.S)
+ARCH_NASM_SRCS := $(wildcard $(ARCHDIR)/*.asm)
 ARCH_ASM_OBJS := $(patsubst $(ARCHDIR)/%.S, $(BUILD_DIR)/arch/%.o, $(ARCH_ASM_SRCS))
 ARCH_ASM_OBJS := $(filter-out $(BUILD_DIR)/arch/crti.o, $(ARCH_ASM_OBJS))
 ARCH_ASM_OBJS := $(filter-out $(BUILD_DIR)/arch/crtn.o, $(ARCH_ASM_OBJS))
+ARCH_NASM_OBJS := $(patsubst $(ARCHDIR)/%.asm, $(BUILD_DIR)/arch/%.asm.o, $(ARCH_NASM_SRCS))
+# ARCH_ASM_OBJS := $(ARCH_ASM_OBJS) $(ARCH_NASM_OBJS)
 ARCH_C_SRCS := $(wildcard $(ARCHDIR)/*.c)
 ARCH_C_OBJS := $(patsubst $(ARCHDIR)/%.c, $(BUILD_DIR)/arch/%.o, $(ARCH_C_SRCS))
-ARCH_OBJS=$(ARCH_ASM_OBJS) $(ARCH_C_OBJS)
+ARCH_OBJS=$(ARCH_ASM_OBJS) $(ARCH_NASM_OBJS) $(ARCH_C_OBJS)
 
 OBJS=\
 $(BUILD_DIR)/arch/crti.o \
@@ -98,8 +101,13 @@ $(BUILD_DIR)/arch/%.o: $(ARCHDIR)/%.c
 $(BUILD_DIR)/%.o: $(SOURCE_DIRS)/%.c
 	@$(CC) -MD $(CFLAGS) $(INCLUDE_DIRS) -c $< $(LIBS) -o $@
 
+# .S will be used for `as` assembly
 $(BUILD_DIR)/arch/%.o: $(ARCHDIR)/%.S
 	@$(CC) -MD $(CFLAGS) $(INCLUDE_DIRS) -c $< $(LIBS) -o $@
+
+# .asm will be used for NASM assembly
+$(BUILD_DIR)/arch/%.asm.o: $(ARCHDIR)/%.asm
+	@nasm -f elf -MD -g -F dwarf -o $@ $<
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIRS)/%.S
 	@$(CC) -MD $(CFLAGS) $(INCLUDE_DIRS) -c $< $(LIBS) -o $@
@@ -116,9 +124,13 @@ $(BUILD_DIR)/crtend.o:
 -include $(BUILD_DIR)/arch/*.d
 
 # Kernel final linking
+# & extract debug symbol from binary
+# to minimize size of kernel binary
 
 $(KERNEL): $(OBJS)
 	@$(CC) $(CFLAGS) $(INCLUDE_DIRS) -T kernel.lds $(LINK_LIST) -o $@
+	@objcopy --only-keep-debug $(KERNEL) $(KERNEL).sym
+	@objcopy --strip-debug $(KERNEL)
 
 # Installation targets
 

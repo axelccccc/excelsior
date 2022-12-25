@@ -2,7 +2,7 @@
 
 #include "gdt.h"
 
-struct gdt_entry* get_gdt_entry(uint8_t* src, struct gdt_entry* dst) {
+gdt_entry* get_gdt_entry(uint8_t* src, gdt_entry* dst) {
 
     dst->limit = (src[0] | (src[1] << 8));
     dst->limit |= ((src[6] & 0x0F) << 16);
@@ -19,7 +19,7 @@ struct gdt_entry* get_gdt_entry(uint8_t* src, struct gdt_entry* dst) {
     
 }
 
-void set_gdt_entry(struct gdt_entry src, uint8_t* dst) {
+void set_gdt_entry(gdt_entry src, uint8_t* dst) {
 
     dst[0] = src.limit & 0xFF;
     dst[1] = (src.limit >> 8) & 0xFF;
@@ -30,27 +30,41 @@ void set_gdt_entry(struct gdt_entry src, uint8_t* dst) {
     dst[4] = (src.base >> 16) & 0xFF;
     dst[7] = (src.base >> 24) & 0xFF;
  
-    dst[5] = ((src.flags & 0x0F) << 4) | (src.flags & 0xF00);
-    dst[6] |= ((src.flags & 0xF0) << 4);
+    dst[5] = ((src.flags & 0x0F) << 4) | ((src.flags & 0xF00) >> 8);
+    dst[6] |= (src.flags & 0xF0);
     
 }
 
-void load_gdt() {
+/**
+ * BUG: LGDT does not load descriptor properly for an address over 2 bytes ??
+ * FIX: It was just set_gdt_entry() that was wrong...
+ */
+void load_gdt(uint32_t base, uint16_t limit) {
+
+    struct {
+        uint16_t limit;
+        uint32_t base;
+    } __attribute__((packed)) _gdt = { limit, base };
 
     __asm__ volatile( // volatile because has no output, not to be optimized away
-        "jmp $0x08,$gdt_did_reset\n\t" // 0x08: kernel code segment
+        "lgdt (%0)\n\t"
+        "mov $0x10, %%ax\n\t"         // 0x10: kernel data segment
+        "mov %%ax, %%ds\n\t"
+        "mov %%ax, %%ss\n\t"
+        "mov %%ax, %%es\n\t"
+        "mov %%ax, %%fs\n\t"
+        "mov %%ax, %%gs\n\t"
+        "jmp $0x08, $gdt_did_reset\n\t" // 0x08: kernel code segment
         "gdt_did_reset:\n\t"
-        "mov $0x10, %ax\n\t"         // 0x10: kernel data segment
-        "mov %ax, %ds\n\t"
-        "mov %ax, %ss\n\t"
-        "mov %ax, %es\n\t"
-        "mov %ax, %fs\n\t"
-        "mov %ax, %gs\n\t"
+        :   // double colon (empty constraints) enable extended asm,
+            // for which registers are prefixed with %% instead of %
+            // (escaping %)
+        : "r" (&_gdt) // input
     );
     
 }
 
-void print_gdt_entry_info(struct gdt_entry* entry) {
+void print_gdt_entry_info(gdt_entry* entry) {
 
     printf("Limit      : %08x\n", entry->limit);
     printf("Base       : %08x\n", entry->base);

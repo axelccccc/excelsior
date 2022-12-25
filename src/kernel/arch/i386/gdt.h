@@ -1,7 +1,10 @@
+#ifndef _KERNEL_GDT_H
+#define _KERNEL_GDT_H 1
+
 #include <stdint.h>
 #include <stdbool.h>
 
-// Start of the Global Descriptor Table
+// Bootloader's start of the Global Descriptor Table
 // (temporary)
 
 #define GDT_START               0x7c15
@@ -25,13 +28,21 @@
 #define GDT_TYPE_RW             0x200
 #define GDT_TYPE_ACCESSED       0x100
 
-struct gdt_entry {
+typedef struct {
         
     uint32_t base;
     uint32_t limit;
-    uint16_t flags;
+    uint16_t flags; // Structure: 0000 (type) (2nd flags) (1st flags)
 
-};
+} __attribute__((packed)) gdt_entry;
+
+/**
+ * @brief Special pointer passed to the processor to load the GDT
+ */
+typedef struct {
+    uint16_t limit;
+    uint32_t base;
+} __attribute__((packed)) gdt_descriptor;
 
 /**
  * @brief Get and decode a GDT entry from memory
@@ -39,22 +50,26 @@ struct gdt_entry {
  * @param dst 
  * @return struct gdt_entry* 
  */
-struct gdt_entry* get_gdt_entry(uint8_t* src, struct gdt_entry* dst);
+gdt_entry* get_gdt_entry(uint8_t* src, gdt_entry* dst);
 
 /**
  * @brief Encode and set a GDT Entry in memory
  * @param src 
  * @param dst 
  */
-void set_gdt_entry(struct gdt_entry src, uint8_t* dst);
+void set_gdt_entry(gdt_entry src, uint8_t* dst);
 
 /**
  * @brief Load Global Descriptor Table
+ * 
+ * @param descriptor Pointer to GDT descriptor
  */
-void load_gdt();
+void load_gdt(uint32_t base, uint16_t limit);
 
 /**
  * @brief Print detailed information on a GDT entry
  * @param entry GDT entry to print
  */
-void print_gdt_entry_info(struct gdt_entry* entry);
+void print_gdt_entry_info(gdt_entry* entry);
+
+#endif
