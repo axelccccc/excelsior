@@ -9,7 +9,7 @@
  *
  * TODO: 'f': handle INF and NAN (arch-specific)
  * TODO: implement length modifiers
- * TODO: implement 'g', 'G', 'a', 'A'
+ * TODO: implement 'g', 'G', 'a', 'A', 'p'
  * TODO: handle exceeding max written chars 
  *       (INT_MAX, setting errno to EOVERFLOW)
  */
@@ -237,7 +237,7 @@ int printf(const char* fmt, ...) {
                     int num_len = 0;
 
                     // Determine number length
-                    int val_copy = val;
+                    unsigned int val_copy = val;
                     while(val_copy) {
                         val_copy /= 10;
                         num_len++;
@@ -296,7 +296,7 @@ int printf(const char* fmt, ...) {
                     int num_len = 0;
 
                     // Determine number length
-                    int val_copy = val;
+                    unsigned int val_copy = val;
                     while(val_copy) {
                         val_copy /= 16;
                         num_len++;
@@ -358,7 +358,7 @@ int printf(const char* fmt, ...) {
                     int num_len = 0;
 
                     // Determine number length
-                    int val_copy = val;
+                    unsigned int val_copy = val;
                     while(val_copy) {
                         val_copy /= 8;
                         num_len++;
