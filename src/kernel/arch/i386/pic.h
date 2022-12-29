@@ -56,7 +56,18 @@ void irq_set_mask(uint8_t irq_line);
  */
 void irq_clear_mask(uint8_t irq_line);
 
+/**
+ * @brief Get the combined value of the cascaded PICs'
+ * interrupt request register
+ * @return uint16_t Value of the IRR
+ */
 uint16_t pic_get_irr(void);
+
+/**
+ * @brief Get the combined value of the cascaded PICs'
+ * in-service register
+ * @return uint16_t Value of the ISR
+ */
 uint16_t pic_get_isr(void);
 
 #endif
