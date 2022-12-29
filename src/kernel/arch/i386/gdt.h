@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 // Bootloader's start of the Global Descriptor Table
 // (temporary)
@@ -57,7 +58,15 @@ gdt_entry* get_gdt_entry(uint8_t* src, gdt_entry* dst);
  * @param src 
  * @param dst 
  */
-void set_gdt_entry(gdt_entry src, uint8_t* dst);
+void set_gdt_entry(gdt_entry* src, uint8_t* dst);
+
+/**
+ * @brief Get the GDT array from Real Mode memory
+ * @param dst Destination array
+ * @param size Size of destination array
+ * @return int Number of retrieved entries
+ */
+int get_gdt_array(uint8_t* dst, size_t size);
 
 /**
  * @brief Load Global Descriptor Table

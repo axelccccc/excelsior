@@ -19,20 +19,40 @@ gdt_entry* get_gdt_entry(uint8_t* src, gdt_entry* dst) {
     
 }
 
-void set_gdt_entry(gdt_entry src, uint8_t* dst) {
+void set_gdt_entry(gdt_entry* src, uint8_t* dst) {
 
-    dst[0] = src.limit & 0xFF;
-    dst[1] = (src.limit >> 8) & 0xFF;
-    dst[6] = (src.limit >> 16) & 0x0F;
+    dst[0] = src->limit & 0xFF;
+    dst[1] = (src->limit >> 8) & 0xFF;
+    dst[6] = (src->limit >> 16) & 0x0F;
  
-    dst[2] = src.base & 0xFF;
-    dst[3] = (src.base >> 8) & 0xFF;
-    dst[4] = (src.base >> 16) & 0xFF;
-    dst[7] = (src.base >> 24) & 0xFF;
+    dst[2] = src->base & 0xFF;
+    dst[3] = (src->base >> 8) & 0xFF;
+    dst[4] = (src->base >> 16) & 0xFF;
+    dst[7] = (src->base >> 24) & 0xFF;
  
-    dst[5] = ((src.flags & 0x0F) << 4) | ((src.flags & 0xF00) >> 8);
-    dst[6] |= (src.flags & 0xF0);
+    dst[5] = ((src->flags & 0x0F) << 4) | ((src->flags & 0xF00) >> 8);
+    dst[6] |= (src->flags & 0xF0);
     
+}
+
+int get_gdt_array(uint8_t* dst, size_t size) {
+
+    int written = 0;
+    uint8_t* gdt_bootloader = (uint8_t*)GDT_START;
+    gdt_entry gdt_tmp;
+
+    for(size_t i = 0; i < size; i++) {
+        set_gdt_entry(
+            get_gdt_entry(
+                &gdt_bootloader[i*8],
+                &gdt_tmp),
+            &dst[i*8]
+        );
+        ++written;
+    }
+
+    return written;
+
 }
 
 /**
