@@ -124,6 +124,63 @@ boot:
     push msg                ; string  (1st parameter) = msg
     call print              ; print welcome message & advance cursor
     
+    ; /!\ since kernel is loaded at 0x10000,
+    ; and bootloader is from 0x7c00 to 0x7e00 (512 bytes),
+    ; mem from 0x7e00 to 0x10000 is accessible
+    ; for other purposes
+    
+    ; retrieve extended memory size
+    ; using BIOS interrupt 0x15, function 0xe820
+    ; to load the array to 0x7e04
+    ; (0x7e00 will store array size)
+mem_map:
+    mov ax, 0               ;
+    mov es, ax              ; clear ES segment
+    mov edi, 0x7e04         ; (ES:DI is now at 0x0:0x7e00 = 0x7e00)
+    xor ebx, ebx            ; clear ebx
+    xor ebp, ebp            ; bp will store array size
+    mov edx, 0x534d4150     ; set signature in edx ("SMAP" in ASCII)
+    mov eax, 0xe820         ; function 0xe820: get ext memory map
+    mov [es:di+20], dword 1 ; make entry ACPI compatible by setting last uint32_t to 1
+    mov ecx, 0x18           ; ask for 24-byte memory map entry (for alignment)
+    int 0x15                ; call BIOS — System Management Interrupt
+    jc short .mm_error      ; if carry flag is set, error
+    cmp eax, 0x534d4150     ; check signature
+    jne short .mm_error     ; if not equal, error
+    cmp ebx, 0              ; check if end of list
+    jne short .mm_check_entry ; if not equal, check entry then loop
+    jmp short .mm_end       ; else, end
+.mm_loop:
+    mov eax, 0xe820         ; function 0xe820: get ext memory map
+    mov [es:di+20], dword 1 ; make entry ACPI compatible by setting last uint32_t to 1
+    mov ecx, 0x18           ; ask for 24-byte memory map entry
+    int 0x15                ; call BIOS — System Management Interrupt
+    jc short .mm_end        ; if carry flag is set, end of list already reached
+    mov edx, 0x534d4150     ; reset signature as a precaution
+.mm_check_entry:
+    cmp ecx, 0              ; check if bytes read is 0
+    je short .mm_skip       ; if so, skip
+    mov eax, [es:di+8]      ; if entry length is 0, skip entry
+    or eax, [es:di+8]       ; OR lower 32 bits with upper 32 bits
+    jz short .mm_skip       ; if zero, skip entry
+    cmp cl, 24              ; check if bytes read is 24
+    jne short .mm_valid_entry ; if not, no more checks needed
+    test byte [es:di+20], 1 ; else check ACPI ignore entry bit
+    je short .mm_skip       ; if set, skip entry
+.mm_valid_entry:
+    add di, 24              ; else, increment buffer offset by 24
+    inc ebp                 ; and increment array size by 1
+.mm_skip:
+    cmp ebx, 0              ; check if end of list
+    jne short .mm_loop      ; if not, loop
+.mm_end:
+    mov [0x7e00], ebp       ; store array size at 0x7e00
+    jmp short .mm_finished  ; and jump to end
+.mm_error:
+    stc
+    jmp short .mm_finished
+.mm_finished:
+    
     ; read 2nd sector of floppy disk into memory
     ;; prepare buffer
     mov ax, 0x1000          ; buffer segment 0x1000
@@ -141,6 +198,22 @@ boot:
     mov dh, 0               ; head 0
     mov dl, 0               ; drive 0
     int 0x13                ; call BIOS — Disk Interrupt
+    
+    ; ; read the following 64kb from the floppy disk into memory
+    ; ;; prepare buffer
+    ; mov ax, 0x2000          ; buffer segment 0x2000
+    ; mov es, ax              ; set ES to buffer segment
+    ; xor bx, bx              ; buffer offset 0x00
+    ;                         ; (buffer is now at 0x2000:00 = 0x20000)
+    ; ;; prepare registers
+    ; mov ah, 0x02            ; function 2: read sectors
+    ; mov al, 128             ; read 128 sectors (64kb)
+    ; mov ch, 7               ; track 7
+    ; mov cl, 4               ; read sector 4 
+    ;                         ; (7 * 18 + 14 = 130th sector (2 + 128))
+    ; mov dh, 0               ; head 0
+    ; mov dl, 0               ; drive 0
+    ; int 0x13                ; call BIOS — Disk Interrupt
 
     ; switch to 32-bit protected mode
     cli                     ; disable interrupts
