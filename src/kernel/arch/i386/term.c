@@ -63,6 +63,10 @@ void term_move_cursor(size_t distance) {
 
 }
 
+/**
+ * TODO: Backspace on first column wraps to last typed char
+ *       on previous line
+ */
 void term_putchar(const char c) {
 
     // get cursor position
@@ -70,6 +74,18 @@ void term_putchar(const char c) {
     term_get_cursor_pos(&row, &column);
 
     if(c == 10) { // handle newline
+        term_move_cursor(VGA_WIDTH - column);
+    } else if(c == 8) { // handle backspace
+        if(column > 0) {
+            term_move_cursor(-1);
+            terminal_buffer[row * VGA_WIDTH + column - 1]
+                = vga_entry(0, DEFAULT_TERM_COLOR);
+        }
+    } else if(c == 9) { // handle tab
+        for(int i = 0; i < 4; i++) {
+            term_putchar(' ');
+        }
+    } else if(c == 13) { // handle carriage return as newline
         term_move_cursor(VGA_WIDTH - column);
     } else {
         terminal_buffer[row * VGA_WIDTH + column]
@@ -84,8 +100,8 @@ void term_scroll(size_t rows) {
     // move all rows up by `rows`
     for(int i = rows; i < VGA_HEIGHT; i++) {
         memcpy(
-            (void*)terminal_buffer + i*VGA_WIDTH*2,
             (void*)terminal_buffer + (i-rows)*VGA_WIDTH*2,
+            (void*)terminal_buffer + i*VGA_WIDTH*2,
             VGA_WIDTH*2
         );
     }
@@ -113,7 +129,7 @@ void term_print(const char* str) {
 void term_clear(void) {
     int num_chars = VGA_WIDTH * VGA_HEIGHT;
     for(int i = 0; i < num_chars; i++) {
-        terminal_buffer[i] = vga_entry(' ', 0x07);
+        terminal_buffer[i] = vga_entry(0, 0x07);
     }
     term_set_cursor_offset(0);
 }

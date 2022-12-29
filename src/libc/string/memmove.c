@@ -11,22 +11,22 @@
 
 #include <string.h>
 
-void* memmove(void* dest, void* src, size_t count) {
+void* memmove(void* dst, void* src, size_t count) {
 
-    unsigned char* dest8 = (unsigned char*)dest;
+    unsigned char* dst8 = (unsigned char*)dst;
     unsigned char* src8 = (unsigned char*)src;
 
     // handles order of moving in case of overlapping
-    if(dest8 < src8) { // from the start if dest starts before src
+    if(dst8 < src8) { // from the start if dest starts before src
         for(size_t i = 0; i < count; i++) {
-            dest8[i] = src8[i];
+            dst8[i] = src8[i];
         }
     } else { // from the end if dest starts after src
         for(size_t i = count; i > 0; i--) {
-            dest8[i - 1] = src8[i - 1];
+            dst8[i - 1] = src8[i - 1];
         }
     }
 
-    return dest;
+    return dst;
     
 }

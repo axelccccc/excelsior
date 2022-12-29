@@ -11,14 +11,14 @@
 
 #include <string.h>
 
-int memcmp(const void* src, const void* dest, size_t count) {
+int memcmp(const void* itm1, const void* itm2, size_t count) {
 
-    unsigned char* src8 = (unsigned char*)src;
-    unsigned char* dest8 = (unsigned char*)dest;
+    unsigned char* itm1_8 = (unsigned char*)itm1;
+    unsigned char* itm2_8 = (unsigned char*)itm2;
 
     for(size_t i = 0; i < count; i++) {
-        if(src8[i] != dest8[i]) {
-            return src8[i] < dest8[i] ? -1 : 1;
+        if(itm1_8[i] != itm2_8[i]) {
+            return itm1_8[i] < itm2_8[i] ? -1 : 1;
         }
     }
 

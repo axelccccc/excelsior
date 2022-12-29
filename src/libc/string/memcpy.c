@@ -10,15 +10,16 @@
  */
 
 #include <string.h>
+#include <stdint.h>
 
-void* memcpy(void* restrict src, void* restrict dest, size_t count) {
+void* memcpy(void* restrict dst, void* restrict src, size_t count) {
 
-    unsigned char* src8 = (unsigned char*)src;
-    unsigned char* dest8 = (unsigned char*)dest;
+    uint8_t* src8 = (uint8_t*)src;
+    uint8_t* dst8 = (uint8_t*)dst;
 
     for(size_t i = 0; i < count; i++)
-        dest8[i] = src8[i];
+        dst8[i] = src8[i];
     
-    return dest;
+    return dst;
     
 }

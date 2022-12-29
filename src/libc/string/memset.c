@@ -11,14 +11,14 @@
 
 #include <string.h>
 
-void* memset(void* dest, char val, size_t count) {
+void* memset(void* dst, char val, size_t count) {
     
-    unsigned char* dest8 = (unsigned char*)dest;
+    unsigned char* dst8 = (unsigned char*)dst;
     
     for(size_t i = 0; i < count; i++) {
-        dest8[i] = val;
+        dst8[i] = val;
     }
 
-    return dest;
+    return dst;
 
 }
