@@ -181,12 +181,13 @@ mem_map:
     jmp short .mm_finished
 .mm_finished:
     
-    ; read 2nd sector of floppy disk into memory
+    ; read 2nd sector of floppy disk (kernel) into memory
     ;; prepare buffer
-    mov ax, 0x1000          ; buffer segment 0x1000
+    mov ax, 0xFFFF          ; buffer segment 0x1000
     mov es, ax              ; set ES to buffer segment
-    xor bx, bx              ; buffer offset 0x00
-                            ; (buffer is now at 0x1000:00 = 0x10000)
+    ; xor bx, bx              ; buffer offset 0x00
+    mov bx, 0x10            ; buffer offset 0x10
+                            ; (buffer is now at 0xFFFF:10 = 0x100000)
                             ; the kernel is loaded at a 64k boundary, (0x10000)
                             ; the floppy disk driver otherwise raises
                             ; a boundary cross error when it is traversed
@@ -249,7 +250,7 @@ bits 32         ; 32-bit protected mode
 
 start_kernel:               ; finally jump to kernel entry point
 
-    jmp [10000h + 18h]        ; jump to dereferenced kernel entry point address
+    jmp [100000h + 18h]        ; jump to dereferenced kernel entry point address
     
     hlt                     ; halt the CPU
 
