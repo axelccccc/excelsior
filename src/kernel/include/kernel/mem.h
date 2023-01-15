@@ -60,6 +60,13 @@ int get_init_mem_map(mem_map_t* dst);
 void set_mem_map(mem_map_t* map);
 
 /**
+ * @brief Insert memory block into the map
+ * @param map map to alter
+ * @return int `0` on success, `-1` on failure
+ */
+int insert_mblk(mem_map_t* map, mblk blk);
+
+/**
  * @brief Merge all adjacent free memory blocks
  * from provided memory map
  * (used in free())

@@ -48,47 +48,7 @@ int map_kernel(mem_map_t* map) {
         kernel_size
     };
 
-    // Find entry colliding with the kernel
-    for(uint32_t i = 0; i < map->size; i++) {
-        if(map->arr[i].addr <= MEM_KERNEL_START &&
-           map->arr[i].addr + map->arr[i].size >= (uint32_t)&kernel_end) {
-
-            // If the entry is free, split it
-            if(!map->arr[i].used) {
-
-                // Create new entry for the kernel
-                mblk mblk_kernel = {
-                    0,
-                    1,
-                    (uint32_t)MEM_KERNEL_START,
-                    kernel_size
-                };
-
-                // Create new entry for the remaining space
-                mblk mblk_free = {
-                    0,
-                    0,
-                    (uint32_t)MEM_KERNEL_START + kernel_size,
-                    map->arr[i].size - kernel_size
-                };
-
-                // Shift all entries after the current one
-                for(uint32_t j = map->size - 1; j > i; j--) {
-                    map->arr[j] = map->arr[j-1];
-                }
-
-                // Insert new entries
-                map->arr[i] = mblk_kernel;
-                map->arr[i+1] = mblk_free;
-
-                return 0;
-
-            }
-            
-        }
-    }
-
-    return -1;
+    return insert_mblk(map, mblk_kernel);
 
 }
 
@@ -173,6 +133,44 @@ int get_init_mem_map(mem_map_t* dst) {
 void set_mem_map(mem_map_t* map) {
     mem_map.arr = map->arr;
     mem_map.size = map->size;
+}
+
+int insert_mblk(mem_map_t* map, mblk blk) {
+
+    // Find entry colliding with the blk
+    for(uint32_t i = 0; i < map->size; i++) {
+        if(map->arr[i].addr <= blk.addr &&
+           map->arr[i].addr + map->arr[i].size >= blk.addr + blk.size) {
+
+            // If the entry is free, split it
+            if(!map->arr[i].used) {
+
+                // Create new entry for the remaining space
+                mblk mblk_free = {
+                    0,
+                    0,
+                    blk.addr + blk.size,
+                    map->arr[i].size - blk.size
+                };
+
+                // Shift all entries after the current one
+                for(uint32_t j = map->size - 1; j > i; j--) {
+                    map->arr[j] = map->arr[j-1];
+                }
+
+                // Insert new entries
+                map->arr[i] = blk;
+                map->arr[i+1] = mblk_free;
+
+                return 0;
+
+            }
+            
+        }
+    }
+
+    return -1;
+
 }
 
 void merge_free_blks(mem_map_t* map) {
