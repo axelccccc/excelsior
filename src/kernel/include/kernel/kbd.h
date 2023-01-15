@@ -1,3 +1,14 @@
+/**
+ * @file kbd.h
+ * @author axelccccc (github.com/axelccccc)
+ * @brief Keyboard driver
+ * @version 0.1
+ * @date 2022-12-26
+ * 
+ * Copyright (c) 2022 axelccccc
+ * 
+ */
+
 #ifndef _KERNEL_KBD_H
 #define _KERNEL_KBD_H 1
 

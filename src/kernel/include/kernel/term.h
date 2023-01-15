@@ -1,3 +1,14 @@
+/**
+ * @file term.h
+ * @author axelccccc (github.com/axelccccc)
+ * @brief Kernel terminal
+ * @version 0.1
+ * @date 2022-12-12
+ * 
+ * Copyright (c) 2022 axelccccc
+ * 
+ */
+
 #ifndef _KERNEL_TERM_H
 #define _KERNEL_TERM_H
 
