@@ -33,7 +33,7 @@ CFLAGS+=$(ARCH_CFLAGS) -g -Wall -Wextra -ffreestanding -gdwarf-4 -ggdb3 -std=gnu
 
 # INCLUDE_DIRS=-Iinclude -I$(ARCHDIR) -I$(LIBC_SRC_DIR)/include -I$(LIBC_SRC_DIR)/$(ARCHDIR)
 # temporary include of the gcc library headers path (for clangd)
-INCLUDE_DIRS=-isystem $(GCC_LIB_INCLUDE_PATH) -isystem $(GCC_LIB_INCLUDE_PATH)-fixed -Iinclude -I$(ARCHDIR) -I$(LIBC_SRC_DIR)/include -I$(LIBC_SRC_DIR)/$(ARCHDIR)
+INCLUDE_DIRS=-isystem $(GCC_LIB_INCLUDE_PATH) -isystem $(GCC_LIB_INCLUDE_PATH)-fixed -Iinclude -I. -I$(LIBC_SRC_DIR)/include -I$(LIBC_SRC_DIR)/$(ARCHDIR)
 LIBS=-L$(BUILD_DIR)/../libc -nostdlib -lk -lgcc
 
 SOURCE_DIRS=src

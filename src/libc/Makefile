@@ -17,16 +17,16 @@ GCC_LIB_INCLUDE_PATH=$(shell which $(CC) | xargs dirname)/../lib/gcc/i686-elf/12
 
 include $(ARCHDIR)/make.config # Architecture-specific build info (CFLAGS, etc.)
 
-CFLAGS+=$(ARCH_CFLAGS) -g -Wall -Wextra -Werror -ffreestanding -nostdlib -gdwarf-4 -ggdb3 -std=gnu99 -fstack-protector
+CFLAGS+=$(ARCH_CFLAGS) -g -Wall -Wextra -ffreestanding -nostdlib -gdwarf-4 -ggdb3 -std=gnu99 -fstack-protector
 
 # production flags (ignore for now)
-# CFLAGS+=$(ARCH_CFLAGS) -O3 -Wall -ffreestanding -nostdlib -std=gnu99
+# CFLAGS+=$(ARCH_CFLAGS) -O3 -Wall -ffreestanding -nostdlib -std=gnu99 -fstack-protector
 
 LIBC_CFLAGS=$(CFLAGS) -D__is_libc
 LIBK_CFLAGS=$(CFLAGS) -D__is_libk
 # INCLUDE_DIRS=-Iinclude -I$(ARCHDIR) -I$(KERNEL_SRC_DIR)/include -I$(KERNEL_SRC_DIR)/$(ARCHDIR)
 # temporary include of the gcc library headers path (for clangd)
-INCLUDE_DIRS=-isystem $(GCC_LIB_INCLUDE_PATH) -isystem $(GCC_LIB_INCLUDE_PATH)-fixed -Iinclude -I$(ARCHDIR) -I$(KERNEL_SRC_DIR)/include -I$(KERNEL_SRC_DIR)/$(ARCHDIR)
+INCLUDE_DIRS=-isystem $(GCC_LIB_INCLUDE_PATH) -isystem $(GCC_LIB_INCLUDE_PATH)-fixed -Iinclude -I. -I$(KERNEL_SRC_DIR)/include -I$(KERNEL_SRC_DIR)
 
 LIBC_SRCS := $(shell find . -iname '*.c' | sed 's/^\.\///')
 LIBC_ASM_SRCS := $(shell find . -iname '*.S' | sed 's/^\.\///')

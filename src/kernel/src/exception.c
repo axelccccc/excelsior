@@ -1,8 +1,12 @@
 #include <stdio.h>
 
-#include <asm.h>
-#include <pic.h>
-#include <ps2.h>
+#if defined(__i386__)
+
+#include <arch/i386/asm.h>
+#include <arch/i386/pic.h>
+#include <arch/i386/ps2.h>
+
+#endif
 
 #include <kernel/kbd.h>
 

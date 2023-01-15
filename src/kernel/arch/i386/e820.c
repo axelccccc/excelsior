@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <e820.h>
+#include <arch/i386/e820.h>
 
 int e820_entry_cmp(const void* a, const void* b) {
     uint64_t x = ((e820_entry*)a)->base;
