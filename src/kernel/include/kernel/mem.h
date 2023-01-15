@@ -15,8 +15,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// Start of extended memory (> 1mb)
-#define MEM_EXT_START       (1 << 20)
+#if defined(__i386__)
+#include <arch/i386/mem.h>
+#endif
 
 // Max entries the mblk array can support
 #define MEM_MAX_ENTRIES     256
@@ -32,37 +33,39 @@ typedef struct {
 } __attribute__((packed)) mblk;
 
 /**
- * @brief Global memory map
+ * @brief Memory map structure
+ * (simple array of memory blocks)
  */
-extern mblk* mem_map;
+typedef struct {
+    mblk* arr;
+    size_t size;
+} mem_map_t;
 
 /**
- * @brief Global memory map size
+ * @brief Global memory map (in mem.c)
  */
-extern size_t mem_map_size;
+extern mem_map_t mem_map;
 
 /**
  * @brief Get initial mapped memory entries
  * @param dst Destination array to store the entries
- * @param size Size of the destination array
  * @return int Number of written entries
  */
-int get_init_mem_map(mblk* dst, size_t size);
+int get_init_mem_map(mem_map_t* dst);
 
 /**
  * @brief Set the global memory map
  * @param map Memory map to be used
  */
-void set_mem_map(mblk* map, size_t size);
+void set_mem_map(mem_map_t* map);
 
 /**
  * @brief Merge all adjacent free memory blocks
  * from provided memory map
  * (used in free())
  * @param map Memory map to alter
- * @param size Number of entries in the memory map
  */
-void merge_free_blks(mblk* map, size_t size);
+void merge_free_blks(mem_map_t* map);
 
 /**
  * @brief Print information on a memory block
