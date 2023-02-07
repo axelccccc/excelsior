@@ -21,7 +21,7 @@ start:
 
 ; message to print on screen
 ; (0ah = newline, 0dh = carriage return, 0 = end of string)
-msg db "Welcome to my OS", 0x0a, 0x0d, 0x0
+; msg db "Welcome to my OS", 0x0a, 0x0d, 0x0
 
 ; GLOBAL DESCRIPTOR TABLE
 ; the GDT is necessary for the 32-bit protected mode to be enabled
@@ -121,8 +121,8 @@ boot:
     cld                     ; clear direction flag (string operations)
 
     ; print welcome message
-    push msg                ; string  (1st parameter) = msg
-    call print              ; print welcome message & advance cursor
+    ; push msg                ; string  (1st parameter) = msg
+    ; call print              ; print welcome message & advance cursor
     
     ; /!\ since kernel is loaded at 0x10000,
     ; and bootloader is from 0x7c00 to 0x7e00 (512 bytes),
@@ -230,7 +230,7 @@ mem_map:
     
 ; include I/O custom library
 ; (while still in 16-bit mode)
-%include "io.asm"
+; %include "io.asm"
     
 protected_mode:
 
