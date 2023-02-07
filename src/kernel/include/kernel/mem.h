@@ -1,7 +1,7 @@
 /**
  * @file mem.h
  * @author axelccccc (github.com/axelccccc)
- * @brief Kernel memory management
+ * @brief Kernel physical memory management
  * @version 0.1
  * @date 2022-12-27
  * 
@@ -16,7 +16,7 @@
 #include <stddef.h>
 
 #if defined(__i386__)
-#include <arch/i386/mem.h>
+#include <arch/i386/memdefs.h>
 #endif
 
 // Max entries the mblk array can support

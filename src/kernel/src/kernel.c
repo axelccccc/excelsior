@@ -1,14 +1,20 @@
-#include "asm.h"
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
 #include <stdio.h>
-#include <kernel/term.h>
+#include <stdlib.h>
 
-#include <gdt.h>
-#include <idt.h>
-#include <pic.h>
+#if defined(__i386__)
+
+// Arch specific (i386)
+// [include in corresponding feature kernel headers !!]
+
+#include <arch/i386/gdt.h>
+#include <arch/i386/idt.h>
+#include <arch/i386/pic.h>
+#include <arch/i386/mmu.h>
+
+#endif
+
+#include <kernel/term.h>
+#include <kernel/mem.h>
 
 #if defined(__linux__)
 #error "Wrong OS target"
