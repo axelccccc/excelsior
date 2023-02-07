@@ -1,3 +1,4 @@
+#include "arch/i386/memdefs.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -8,23 +9,15 @@
 #endif
 
 /**
- * @brief Value defined in the linker script
- * located at the very end of the kernel.
- * It is not defined, what we use is its address
- * to locate the end of the kernel in memory.
- */
-extern uint32_t kernel_end;
-
-/**
  * @brief Global memory map's memory block array
  */
-static mblk mem_map_arr[MEM_MAX_ENTRIES];
+static mblk phys_mem_arr[MEM_MAX_ENTRIES];
 
 /**
  * @brief Global memory map
  */
-mem_map_t mem_map = {
-    .arr = mem_map_arr,
+mem_map_t phys_mem = {
+    .arr = phys_mem_arr,
     .size = MEM_MAX_ENTRIES
 };
 
@@ -37,13 +30,13 @@ mem_map_t mem_map = {
 int map_kernel(mem_map_t* map) {
 
     // Get kernel size
-    uint32_t kernel_size = (uint32_t)&kernel_end - (uint32_t)MEM_KERNEL_START;
+    uint32_t kernel_size = (uint32_t)&kernel_end - (uint32_t)KERNEL_START;
 
     // Get kernel block
     mblk mblk_kernel = {
         0,
         1,
-        (uint32_t)MEM_KERNEL_START,
+        (uint32_t)PHYS_KERNEL_START,
         kernel_size
     };
 
@@ -51,7 +44,7 @@ int map_kernel(mem_map_t* map) {
 
 }
 
-int get_init_mem_map(mem_map_t* dst) {
+int get_init_mem_map() {
 
 // If arch i386, use BIOS INT18 E820
 // data structures
@@ -75,7 +68,7 @@ int get_init_mem_map(mem_map_t* dst) {
     for(uint32_t i = 0; i < mem_map_size; i++) {
 
         // If mblk cannot add more entries, return
-        if(cur_blk >= dst->size - 1) break;
+        if(cur_blk >= phys_mem.size - 1) break;
         
         // Entry corresponding to E820 counterpart
         mblk entry = {
@@ -113,25 +106,20 @@ int get_init_mem_map(mem_map_t* dst) {
             free_mem.size = free_space - ext_mem_map[i].base;
         }
 
-        dst->arr[cur_blk++] = entry;
+        phys_mem.arr[cur_blk++] = entry;
         if(free_mem.size > 0) {
-            dst->arr[cur_blk++] = free_mem;
+            phys_mem.arr[cur_blk++] = free_mem;
         }
         
     }
 
-    if(map_kernel(dst) < 0)
+    if(map_kernel(&phys_mem) < 0)
         return -1;
 
     return ++cur_blk;
     
 #endif
 
-}
-
-void set_mem_map(mem_map_t* map) {
-    mem_map.arr = map->arr;
-    mem_map.size = map->size;
 }
 
 int insert_mblk(mem_map_t* map, mblk blk) {

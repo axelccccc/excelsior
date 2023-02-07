@@ -61,7 +61,6 @@ static uint64_t gdt[6];
 
 // Interrupt Descriptor Table
 // (256 * 8-byte structures)
-
 static uint64_t idt[256];
 extern void* isr_stub_table[];
 

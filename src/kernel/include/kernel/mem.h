@@ -22,6 +22,17 @@
 // Max entries the mblk array can support
 #define MEM_MAX_ENTRIES     256
 
+// Kernel start virtual address
+#define KERNEL_START        0xC0000000
+
+/**
+ * @brief Value defined in the linker script
+ * located at the very end of the kernel.
+ * It is not defined, what we use is its address
+ * to locate the end of the kernel in memory.
+ */
+extern uint32_t kernel_end;
+
 /**
  * @brief Memory Block Header
  */
@@ -42,22 +53,15 @@ typedef struct {
 } mem_map_t;
 
 /**
- * @brief Global memory map (in mem.c)
+ * @brief Global physical memory map (in mem.c)
  */
-extern mem_map_t mem_map;
+extern mem_map_t phys_mem;
 
 /**
  * @brief Get initial mapped memory entries
- * @param dst Destination array to store the entries
- * @return int Number of written entries
+ * @return int Number of written entries, `-1` on error
  */
-int get_init_mem_map(mem_map_t* dst);
-
-/**
- * @brief Set the global memory map
- * @param map Memory map to be used
- */
-void set_mem_map(mem_map_t* map);
+int get_init_mem_map();
 
 /**
  * @brief Insert memory block into the map

@@ -13,9 +13,9 @@
 #define _KERNEL_MEM_I386_H 1
 
 // Start of extended memory (> 1mb)
-#define MEM_EXT_START       0x100000
+#define EXTMEM_START        0x100000
 
 // Start of kernel memory (1mb)
-#define MEM_KERNEL_START    0x100000
+#define PHYS_KERNEL_START   0x100000
 
 #endif
