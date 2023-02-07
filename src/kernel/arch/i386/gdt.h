@@ -8,7 +8,7 @@
 // Bootloader's start of the Global Descriptor Table
 // (temporary)
 
-#define GDT_START               0x7c15
+#define GDT_START               0x7c02
 
 // The flags are defined in accordance to
 // the way they are stored in gdt_entry.flags

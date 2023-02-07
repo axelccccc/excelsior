@@ -10,7 +10,7 @@ PHDRS
 
 SECTIONS
 {
-    . = 0x101000;
+    . = 0xC0001000;
     .text :         ALIGN(4K) { *(.text) } :code
     .rodata :       ALIGN(4K) { *(.rodata) } :data
     .data :         ALIGN(4K) { *(.data) } :data
